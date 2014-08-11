@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
-import sys
-import poker
+"""
+Cosas por hacer:
+- Limitar rapuestas cuando un jugador tiene menos puntos
+- ¿Qué pasa cuand olos dos jugadores se
+- Probar si corre bien con Python 3
+"""
+import motor_de_poker as poker
 import random
 
 def mostrar_cartas(cartas):
-    """Leer una De una lista de cartas las imprime en secuencia"""
+    """Leer una una lista de cartas y mostrar el texto"""
     texto = ''
 
     for carta in cartas:
@@ -13,6 +18,7 @@ def mostrar_cartas(cartas):
     print(texto)
 
 def preguntar_jugada():
+    """Preguntar por el teclado la siguiente jugada"""
     respuesta = raw_input('A - Apostar, R - Rendirse: ')
     respuesta = respuesta.strip().upper()
     if respuesta == 'A' or respuesta == 'R':
@@ -22,8 +28,7 @@ def preguntar_jugada():
     preguntar_jugada()
 
 def leer_jugada_del_bot(cartas_jugador, cartas_comunes, puntuacion):
-    #return 'A'
-    if random.randrange(10) > 7:
+    if random.randrange(10) > 8:
         return 'R'
     else:
         return 'A'
@@ -108,7 +113,7 @@ def repartir_cartas():
     mostrar_apuestas()
 
     # Obtener el "Flop" (Primeras tres cartas)
-    print('Flop')
+    print('Cartas comunes')
     agregar_cartas(mazo, 3, cartas_comunes)
 
     mostrar_cartas(cartas_jugador[nuestro_jugador])
@@ -136,7 +141,7 @@ def repartir_cartas():
     mostrar_cartas(cartas_comunes)
     mostrar_mejor_mano(cartas_jugador[nuestro_jugador] + cartas_comunes)
 
-    apuesta_actual = 2
+    apuesta_actual = 4
     mostrar_apuesta(apuesta_actual)
 
     jugada_jugador = preguntar_jugada()
@@ -157,7 +162,7 @@ def repartir_cartas():
     mostrar_cartas(cartas_comunes)
     mostrar_mejor_mano(cartas_jugador[nuestro_jugador] + cartas_comunes)
 
-    apuesta_actual = 2
+    apuesta_actual = 8
     mostrar_apuesta(apuesta_actual)
 
     jugada_jugador = preguntar_jugada()
@@ -174,9 +179,9 @@ def repartir_cartas():
     return 'Nadie' # Nadie se rindió
 
 while juego_activo:
-    print('- Mano #' + str(mano_actual) + ' -')
+    print('         - Mano # ' + str(mano_actual) + ' -')
 
-    print('------------------')
+    print('------------------------------')
     print('        Tu tienes: ' + str(jugadores[nuestro_jugador]['dinero']))
     print('Tu oponente tiene: ' + str(jugadores[jugador_oponente]['dinero']))
     print('             Pozo: ' + str(juego['pozo']))
@@ -249,3 +254,8 @@ while juego_activo:
 # Mostrar las victorias de cada jugador
 print('Victorias Jugador 1: ' + str(jugadores[0]['victorias']))
 print('Victorias Jugador 2: ' + str(jugadores[1]['victorias']))
+
+if jugadores[nuestro_jugador]['dinero'] > jugadores[jugador_oponente]['dinero']:
+    print('Gana nuestro jugador')
+else:
+    print('Gana el oponente')

@@ -1,7 +1,16 @@
+# -*- coding: utf-8 -*-
+# Based on code from "CS2012: Design of Computer Programs"
+# https://www.udacity.com/course/cs212
 import random
 import math
 import itertools
 from collections import defaultdict
+
+def deal(numhands, n = 5, deck = [r+s for r in '123456789' for s in 'DCET']):
+    "Return a list of numhands hands consisting of n cards each"
+    random.shuffle(deck)
+    deck = iter(deck)
+    return [[next(deck) for card in range(n)] for hand in range(numhands)]
 
 def poker(hands):
     "Return a list of winning hands: poker([hand,...]) => [hand,...]"
@@ -14,8 +23,7 @@ def allmax(iterable, key=lambda x:x):
 
 def hand_rank(hand):
     "Return a value indicating how high the hand ranks."
-    # counts is the count of each rank
-    # ranks lists corresponding ranks
+    # counts is the count of each rank - ranks lists corresponding ranks
     # E.g. '7 T 7 9 7' => counts = (3, 1, 1); ranks = (7, 10, 9)
     groups = group(['-123456789'.index(r) for r, s in hand])
     counts, ranks = unzip(groups)
@@ -45,19 +53,14 @@ def unzip(pairs):
 
 def card_ranks(hand):
     "Return a list of the ranks, sorted with higher first."
-    ranks = [14 if r == 'A' else
-             13 if r == 'K' else
-             12 if r == 'Q' else
-             11 if r == 'J' else
-             10 if r == 'T' else
-             int(r)
-             for r, s in hand]
+    ranks = [int(r) for r, s in hand]
     ranks.sort(reverse = True)
-    return ranks if ranks != [14, 5, 4, 3, 2] else [5, 4, 3, 2, 1]
+    #return ranks if ranks != [14, 5, 4, 3, 2] else [5, 4, 3, 2, 1]
+    return ranks
 
 def straight(ranks):
     "Return True if the ordered ranks form a 5-card straight."
-    return sum(ranks) - min(ranks)*5 == 10
+    return sum(ranks) - min(ranks) * 5 == 10
 
 def flush(hand):
     "Return True if all the cards have the same suit."
@@ -79,16 +82,57 @@ def kind(n, ranks):
             return r
     return None
 
-deck = [r + s for r in '123456789' for s in 'DCET']
+hand_names = [
+    '1 par',
+    'Carta alta',
+    '2 pares',
+    '3 iguales',
+    'Corrida',
+    'Full',
+    'Color',
+    '4 iguales',
+    'Corrida de color',
+    ]
 
-def deal(numhands, n = 5, deck = [r+s for r in '123456789' for s in 'DCET']):
-    "Return a list of numhands hands consisting of n cards each"
-    random.shuffle(deck)
-    deck = iter(deck)
-    return [[next(deck) for card in range(n)] for hand in range(numhands)]
+def best_hand(hand):
+    "From a 7-card hand, return the best 5 card hand"
+    return max(itertools.combinations(hand, 5), key=hand_rank)
+
+def hand_percentages(n = 700 * 1000):
+    "Sample n random hands and print a table of percentages for each type of hand"
+    counts = [0] * 9
+    for i in range(n / 10):
+        for hand in deal(10):
+            ranking = hand_rank(hand)[0]
+            counts[ranking] += 1
+    for i in reversed(range(9)):
+        print('%14s: %6.2f'%(hand_names[i], 100. * counts[i] / n))
+
+def all_hand_percentages():
+    "Print an exhaustive table of frequencies for each type of hand"
+    import time
+    start_time = time.time()
+
+    counts = [0]*9
+    n = 0
+    deck = [r+s for r in '123456789' for s in 'DCET']
+    for hand in itertools.combinations(deck, 5):
+        n += 1
+        ranking = hand_rank(hand)[0]
+        counts[ranking] += 1
+    for i in reversed(range(9)):
+        print('%18s: %7d %6.2f'%(hand_names[i], counts[i], 100.*counts[i]/n))
+
+    print('%18s: %7d %6.2f'%('Total', n, 100))
+    print('- %.3f seconds -' %(time.time() - start_time))
 
 def test():
-    "Test cases for the functions in poker program"
+    """Test cases for the functions in poker program"""
+    straight_flush = "3T 4T 5T 6T 7T".split()
+
+    assert flush(straight_flush) == True
+
+    """
     sf = "6C 7C 8C 9C TC".split() # Straight Flush
     fk = "9D 9H 9S 9C 7D".split() # Four of a Kind
     fh = "TD TC TH 7C 7D".split() # Full House
@@ -98,6 +142,7 @@ def test():
     tp = "5S 5D 9H 9C 6S".split() # two pair
     ah = "AS 2S 3S 4S 6C".split() # A high
     sh = "2S 3S 4S 6C 7D".split() # 7 high
+
     assert poker([sf, fk, fh]) == [sf]
     assert poker([fk, fh]) == [fk]
     assert poker([fh, fh]) == [fh, fh]
@@ -114,6 +159,7 @@ def test():
     # Ace-high beats 7-high
     assert (card_ranks(['AS', '2C', '3D', '4H', '6S']) >
             card_ranks(['2D', '3S', '4C', '6H', '7D']))
+
     # 5-straight loses to 6-straight
     assert (card_ranks(['AS', '2C', '3D', '4H', '5S']) <
             card_ranks(['2D', '3S', '4C', '5H', '6D']))
@@ -134,26 +180,9 @@ def test():
 
     assert flush(sf) == True
     assert flush(fk) == False
+    """
 
     return 'tests pass'
-
-hand_names = [
-    '1 par',
-    'Carta alta',
-    '2 pares',
-    '3 iguales',
-    'Corrida',
-    'Full',
-    'Color',
-    '4 iguales',
-    'Corrida de color',
-    ]
-
-def factorial(n): return 1 if (n <= 1) else n*factorial(n-1)
-
-def best_hand(hand):
-    "From a 7-card hand, return the best 5 card hand"
-    return max(itertools.combinations(hand, 5), key=hand_rank)
 
 def test_best_hand():
     assert (sorted(best_hand("6C 7C 8C 9C TC 5C JS".split()))
@@ -163,3 +192,5 @@ def test_best_hand():
     assert (sorted(best_hand("JD TC TH 7C 7D 7S 7H".split()))
             == ['7C', '7D', '7H', '7S', 'JD'])
     return 'test_best_hand passes'
+
+#all_hand_percentages()
